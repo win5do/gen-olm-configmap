@@ -1,0 +1,163 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "test.example.com/v1alpha1",
+          "kind": "Demo",
+          "metadata": {
+            "name": "example-demo"
+          },
+          "spec": {
+            "size": 3
+          }
+        }
+      ]
+    capabilities: Basic Install
+  name: demo-operator.v0.0.1
+  namespace: placeholder
+spec:
+  apiservicedefinitions: { }
+  customresourcedefinitions:
+    owned:
+      - description: Demo is the Schema for the demos API
+        kind: Demo
+        name: demos.test.example.com
+        version: v1alpha1
+  description: demo
+  displayName: demo
+  install:
+    spec:
+      deployments:
+        - name: demo-operator
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                name: demo-operator
+            strategy: { }
+            template:
+              metadata:
+                labels:
+                  name: demo-operator
+              spec:
+                containers:
+                  - command:
+                      - demo-operator
+                    env:
+                      - name: WATCH_NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.annotations['olm.targetNamespaces']
+                      - name: POD_NAME
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.name
+                      - name: OPERATOR_NAME
+                        value: demo-operator
+                    image: registry.xxx.io./demo-operator:v0.0.1 # replace
+                    imagePullPolicy: Always
+                    name: demo-operator
+                    resources: { }
+                serviceAccountName: demo-operator
+      permissions:
+        - rules:
+            - apiGroups:
+                - ""
+              resources:
+                - pods
+                - services
+                - services/finalizers
+                - endpoints
+                - persistentvolumeclaims
+                - events
+                - configmaps
+                - secrets
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - patch
+                - update
+                - watch
+            - apiGroups:
+                - apps
+              resources:
+                - deployments
+                - daemonsets
+                - replicasets
+                - statefulsets
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - patch
+                - update
+                - watch
+            - apiGroups:
+                - monitoring.coreos.com
+              resources:
+                - servicemonitors
+              verbs:
+                - get
+                - create
+            - apiGroups:
+                - apps
+              resourceNames:
+                - demo-operator
+              resources:
+                - deployments/finalizers
+              verbs:
+                - update
+            - apiGroups:
+                - ""
+              resources:
+                - pods
+              verbs:
+                - get
+            - apiGroups:
+                - apps
+              resources:
+                - replicasets
+                - deployments
+              verbs:
+                - get
+            - apiGroups:
+                - test.example.com
+              resources:
+                - '*'
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - patch
+                - update
+                - watch
+          serviceAccountName: demo-operator
+    strategy: deployment
+  installModes:
+    - supported: true
+      type: OwnNamespace
+    - supported: true
+      type: SingleNamespace
+    - supported: false
+      type: MultiNamespace
+    - supported: true
+      type: AllNamespaces
+  keywords:
+    - demo
+  links:
+    - name: Demo Operator
+      url: https://demo-operator.domain
+  maintainers:
+    - email: yy@123.com
+      name: xx
+  maturity: alpha
+  provider:
+    name: demo
+  version: 0.0.1
